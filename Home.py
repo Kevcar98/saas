@@ -92,6 +92,6 @@ elif st.session_state["authentication_status"] == False:
     register_new_user()
 
 # Handle actions for new users or users with no authentication status
-elif st.session_state["authentication_status"] == None:
-    st.warning('New to SaaS app? Register below.')
-    register_new_user()
+#elif st.session_state["authentication_status"] == None:
+    #st.warning('New to SaaS app? Register below.')
+    #register_new_user()
