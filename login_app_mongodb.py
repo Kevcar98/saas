@@ -1,5 +1,10 @@
 import streamlit as st
 import re
+import plotly.graph_objects as go
+from streamlit_option_menu import option_menu
+import calendar
+from datetime import datetime
+
 from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
 
@@ -122,6 +127,16 @@ def home(username):
     susername = re.sub(r'[\[\]\']', '', str(username))#removes square brackets and single quotations
     st.title(f"Home Page - Welcome, {susername}!")
     st.write("You can put your content here.")
+    
+    selectedCurrency = option_menu(
+        menu_title= None,
+        options=["GBP","Euro","USD"],
+        icons=["1","2","3"],
+        orientation= "horizontal",)
+
+
+
+
 
 def main():
     params = st.experimental_get_query_params()
