@@ -1,9 +1,12 @@
 import streamlit as st
 import re
 import plotly.graph_objects as go
+import plotly.express as px
 from streamlit_option_menu import option_menu
 import calendar
+import pandas as pd
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
@@ -133,11 +136,18 @@ def home(username):
         menu_title= None,
         options=["GBP","Euro","USD"],
         icons=["1","2","3"],
-        orientation= "horizontal",)    
-    if selectedCurrency:
+        orientation= "horizontal",) 
+
+    selected = option_menu(
+    menu_title= None,
+    options=["Data Entry","Data Visualization"],
+    icons=["pencil-fill","bar-chart-fill"],
+    orientation= "horizontal",
+)
+    if selected == "Data Entry":
         DataEntry(selectedCurrency,susername)
-    
-    
+    elif selected == "Data Visualization":
+        DataViz(susername)  
 
 
 
@@ -179,47 +189,35 @@ def get_all_periods():
     periods = [item["key"] for item in items]
     return periods
 
-def DataViz():
+def DataViz(username):
+    user=""
     st.header("Data Visualization")
     years = [datetime.today().year, datetime.today().year + 1]
     months = list(calendar.month_name[1:])
     incomes = ["Salary","Blog","Other Income"]
     expenses = ["Rent","Utilities","Groceries","Car","Saving"]
-    with st.form("Saved periods"):
-            period = st.selectbox("Select Period:", get_all_periods())
-            submitted = st.form_submit_button("Plot Period")
-            if submitted:
-                period_data = DataEntrys.get_period(period)
-                for doc in period_data:
-                    comment = doc["comment"]
-                    expenses = doc["expenses"]
-                    incomes = doc["incomes"]
 
+    data = DataEntrys.find_one({"user": "user"})
+    incomes = data.get("incomes", {})
+    expenses = data.get("expenses", {})
 
-                total_income = sum(incomes.values())
-                total_expense = sum(expenses.values())
-                remaining_budget = total_income - total_expense
-                col1, col2, col3 = st.columns(3)
-                col1.metric("Total Income",f"{total_income} {currency}")
-                col2.metric("Total Expense",f"{total_expense} {currency}")
-                col3.metric("Remaining Budget",f"{remaining_budget} {currency}")
-                st.text(f"Comment:{comment}")
+# Create a DataFrame for easier manipulation
+    dfExpenses = pd.DataFrame({
+        'Category': list(expenses.keys()),
+        'Amount': list(expenses.values())
+    })
 
+    dfincome = pd.DataFrame({
+        'Category': list(incomes.keys()),
+        'Amount': list(incomes.values())
+    })
 
-                label = list(incomes.keys()) + ["Total income"] + list(expenses.keys())
-                source = list(range(len(incomes))) + [len(incomes)] * len(expenses)
-                target = [len(incomes)] * len(incomes) + [label.index(expense) for expense in expenses.keys()]
-                value = list(incomes.values()) + list(expenses.values())
-
-
-                link = dict(source=source, target=target,value=value)
-                node = dict(label=label,pad=20,thickness=25,color="#00684A")
-                data = go.Sankey(link=link,node=node)
-
-                fig = go.Figure(data)
-                fig.update_layout(margin=dict(l=0,r=0,t=5,b=5))
-                st.plotly_chart(fig, use_container_width=True)
-
+# Create a pie chart using Plotly Express
+    figIncome = px.pie(dfincome, values='Amount', names='Category', title='Income Breakdown')
+    figExpense = px.pie(dfExpenses, values='Amount', names='Category', title='Expenses Breakdown')
+# Display the pie chart using Streamlit
+    st.plotly_chart(figIncome)
+    st.plotly_chart(figExpense)
 
 
 def main():
