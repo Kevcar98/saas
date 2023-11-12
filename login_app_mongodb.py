@@ -13,7 +13,7 @@ from passlib.hash import pbkdf2_sha256
 
 # Connect to your MongoDB instance.
 # Replace the connection URL with your own.
-client = MongoClient("mongodb+srv://Kevcar98:QKlGirVW2q6lYuuc@cluster0.bg2grjx.mongodb.net/")
+client = MongoClient("")
 db = client["your_db_name"]  # Replace with your database name
 users_collection = db["users"]  # Replace with your collection name
 DataEntrys=db["DataEntry"]
